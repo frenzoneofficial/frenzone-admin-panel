@@ -82,3 +82,32 @@ Record admin ID, action, target, reason, UTC timestamp, previous/new state and r
 
 ## Backend verification required
 Inventory all legacy report/moderation endpoints and map them to the unified case model before deleting or replacing legacy screens.
+
+
+## Zoho Desk synchronization
+Frenzone reports/cases must also integrate with Zoho Desk.
+
+Target behavior:
+- create or synchronize a Zoho Desk ticket for report categories configured for support/moderation routing;
+- retain the Frenzone Case ID and reported entity type/ID in the Zoho ticket;
+- retain the Zoho Desk ticket ID/status in the Frenzone case;
+- map reporter/contact details only when appropriate and permitted;
+- include category, description, UTC timestamp and safe evidence/reference links;
+- do not send unnecessary sensitive evidence or private user data to Zoho;
+- synchronize status/assignment/comments only according to the verified integration contract;
+- avoid duplicate Zoho tickets when the same Frenzone case is retried;
+- log synchronization success/failure and last sync UTC;
+- provide an admin link to the Zoho ticket when available.
+
+Suggested case fields:
+- zohoDeskTicketId
+- zohoDeskTicketNumber
+- zohoDeskStatus
+- zohoDeskDepartmentId
+- zohoDeskAssigneeId
+- zohoDeskLastSyncAt
+- zohoDeskSyncStatus
+- zohoDeskSyncError
+
+### Backend verification required
+Before enabling, verify the existing Zoho Desk organization/department, OAuth/API credentials location, ticket-creation endpoint/service, field mappings, webhook/update strategy, retry/idempotency behavior and permissions. Zoho credentials must remain backend-only and never be embedded in the admin frontend.
