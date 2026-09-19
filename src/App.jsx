@@ -95,9 +95,9 @@ function NotificationsModule(){
 function ReportsModule(){
  const types=['User Profile','Live Stream','Club','Post / Video']
  return <section className="module"><Title eyebrow="MODERATION" title="Reports & Cases" actions={<div className="actions"><button className="secondary"><Filter size={14}/> Filters</button><button className="secondary"><Download size={14}/> Export</button></div>}/>
-  <div className="filter-chips">{types.map(x=><button key={x}>{x}</button>)}</div>
+  <div className="toolbar"><div className="filter-chips">{types.map(x=><button key={x}>{x}</button>)}</div><Status>ZOHO DESK SYNC • NEEDS BACKEND</Status></div>
   <div className="table-wrap"><table><thead><tr><th>Case</th><th>Reported entity</th><th>Category</th><th>Reporter</th><th>Status</th><th>Created UTC</th></tr></thead><tbody>
-   <tr><td colSpan="6"><div className="table-empty"><ShieldAlert size={22}/><b>No backend cases loaded</b><span>Abuse, nudity/sexual content, harassment, threats, spam and other report categories will be unified here.</span></div></td></tr>
+   <tr><td colSpan="6"><div className="table-empty"><ShieldAlert size={22}/><b>No backend cases loaded</b><span>Abuse, nudity/sexual content, harassment, threats, spam and other report categories will be unified here and synchronized to Zoho Desk according to the verified routing rules.</span></div></td></tr>
   </tbody></table></div>
  </section>
 }
