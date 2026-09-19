@@ -79,7 +79,7 @@ function Sessions() {
 
 function NotificationsModule(){
  const [mode,setMode]=useState('Email')
- return <div className="grid">
+ return <><div className="grid">
   <section className="module"><Title eyebrow="CAMPAIGN COMPOSER" title="New notification"/><div className="seg">{['Push','Email','Both'].map(x=><button className={mode===x?'active':''} onClick={()=>setMode(x)} key={x}>{x}</button>)}</div>
    <label>Audience<select><option>All eligible users</option><option>Country / countries</option><option>Specific Frenzone users</option><option>Specific registered emails</option><option>Imported eligible email list</option></select></label>
    <label>Countries<select multiple><option>Canada</option><option>United States</option><option>UAE</option><option>France</option><option>Saudi Arabia</option></select></label>
@@ -89,7 +89,7 @@ function NotificationsModule(){
    <button className="primary" disabled>Send unavailable until backend is connected</button>
   </section>
   <section className="module"><Title eyebrow="RECIPIENT PREVIEW" title="Audience"/><div className="preview-count">—</div><p className="muted">Eligible recipients</p><div className="empty compact"><strong>Backend not connected</strong><p>Suppressed, unsubscribed, bounced and invalid recipients will be excluded before send.</p></div></section>
- </div>
+ </div><NotificationHistory/></>
 }
 
 function ReportsModule(){
@@ -133,6 +133,8 @@ function RolesModule(){return <section className="module"><Title eyebrow="ACCESS
 function SettingsModule(){return <div className="grid"><section className="module"><Title eyebrow="APP CONTROL" title="Version & Features"/><Info icon={<Smartphone/>} a="iOS version" b="Unavailable"/><Info icon={<Smartphone/>} a="Android version" b="Unavailable"/><Info icon={<Settings/>} a="Force update" b="Unavailable"/><Info icon={<Settings/>} a="Feature flags" b="Unavailable"/></section><section className="module"><Title eyebrow="PROVIDERS" title="Service Health"/>{['Didit','RevenueCat','Agora','Push provider','Email provider','Zoho Desk'].map(x=><div className="provider" key={x}><b>{x}</b><Status>NOT VERIFIED</Status></div>)}</section></div>}
 
 function AnalyticsModule(){return <><div className="cards">{['DAU','WAU','MAU','D1 retention','D7 retention','D30 retention'].map(x=><article className="card" key={x}><span>{x}</span><strong>—</strong><small>Metric source not connected</small></article>)}</div><div className="grid"><Empty title="Retention & Cohorts" text="D1/D7/D14/D30, churn and reactivation require verified event definitions."/><Empty title="Engagement & Monetization" text="Live, PK, Clubs, Moments, paid content, ARPU/LTV/CAC and conversion metrics require verified sources."/></div></>}
+
+function NotificationHistory(){return <section className="module"><Title eyebrow="DELIVERY HISTORY" title="Campaign History" actions={<button className="secondary"><Download size={14}/> Export</button>}/><div className="table-wrap"><table><thead><tr><th>Campaign</th><th>Channel</th><th>Audience</th><th>Sent</th><th>Delivered</th><th>Opened</th><th>Clicked</th><th>Failed</th><th>UTC</th></tr></thead><tbody><tr><td colSpan="9"><div className="table-empty"><Bell size={22}/><b>No campaign backend connected</b><span>Metrics remain unavailable until the delivery providers and event callbacks are verified.</span></div></td></tr></tbody></table></div></section>}
 
 function Empty({title,text}){return <section className="module"><Title eyebrow="PLANNED / DESIGNED" title={title}/><div className="empty"><strong>{title} frontend shell is ready.</strong><p>{text||'Live values and actions stay disabled until the corresponding Frenzone backend contract is verified.'}</p></div></section>}
 function Module({name}) {
