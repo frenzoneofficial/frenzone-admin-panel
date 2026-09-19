@@ -122,11 +122,27 @@ function LawModule(){
  </section>
 }
 
+function LiveModule(){return <div className="grid"><section className="module"><Title eyebrow="LIVE OPERATIONS" title="Active Live Sessions"/><div className="empty compact"><strong>No Live backend connected</strong><p>Solo, co-host, PK 1v1 and PK 2v2 sessions will show host, guests, viewers, duration, reports and moderation state.</p></div></section><section className="module"><Title eyebrow="MANUAL CONTROL" title="Live Access"/><Info icon={<Radio/>} a="Eligibility rules" b="Needs backend verification"/><Info icon={<KeyRound/>} a="Grant / revoke" b="Permission controlled"/><Info icon={<ClipboardList/>} a="Reason + admin + UTC" b="Required audit"/><button className="primary" disabled>Live actions unavailable</button></section></div>}
+
+function KycModule(){return <div className="grid"><section className="module"><Title eyebrow="IDENTITY" title="KYC & Verification"/><Info icon={<BadgeCheck/>} a="Didit KYC" b="Separate state"/><Info icon={<BadgeCheck/>} a="Admin manual verification" b="Separate state"/><Info icon={<CreditCard/>} a="Paid verification entitlement" b="Separate state"/><div className="empty compact"><strong>No verification API connected</strong><p>The UI will not treat RevenueCat entitlement or manual verification as Didit approval.</p></div></section><section className="module"><Title eyebrow="MANUAL CONTROL" title="Admin Verification"/><label>Reason<textarea placeholder="Required reason for grant or removal"/></label><label>Optional expiry<input type="datetime-local"/></label><button className="primary" disabled>Verification actions unavailable</button></section></div>}
+
+function AuditModule({activity=false}){return <section className="module"><Title eyebrow={activity?'USER BEHAVIOUR':'ADMIN SECURITY'} title={activity?'User Activity Logs':'Admin Audit Logs'} actions={<button className="secondary"><Download size={14}/> Export</button>}/><div className="table-wrap"><table><thead><tr><th>UTC</th><th>{activity?'User':'Admin'}</th><th>Action / Event</th><th>Target</th><th>IP / Context</th><th>Result</th></tr></thead><tbody><tr><td colSpan="6"><div className="table-empty"><Activity size={22}/><b>No event backend connected</b><span>{activity?'App sessions and behaviour events will be displayed here.':'Privileged actions will require attributable server-side audit records.'}</span></div></td></tr></tbody></table></div></section>}
+
+function RolesModule(){return <section className="module"><Title eyebrow="ACCESS CONTROL" title="Roles & Permissions"/><div className="permission-grid">{['Super Admin','Operations','Moderation','Finance','Support','Analytics','Law Enforcement'].map(x=><div className="permission-card" key={x}><b>{x}</b><span>Permission matrix pending backend contract</span><Status>SERVER ENFORCEMENT REQUIRED</Status></div>)}</div></section>}
+
+function SettingsModule(){return <div className="grid"><section className="module"><Title eyebrow="APP CONTROL" title="Version & Features"/><Info icon={<Smartphone/>} a="iOS version" b="Unavailable"/><Info icon={<Smartphone/>} a="Android version" b="Unavailable"/><Info icon={<Settings/>} a="Force update" b="Unavailable"/><Info icon={<Settings/>} a="Feature flags" b="Unavailable"/></section><section className="module"><Title eyebrow="PROVIDERS" title="Service Health"/>{['Didit','RevenueCat','Agora','Push provider','Email provider','Zoho Desk'].map(x=><div className="provider" key={x}><b>{x}</b><Status>NOT VERIFIED</Status></div>)}</section></div>}
+
+function AnalyticsModule(){return <><div className="cards">{['DAU','WAU','MAU','D1 retention','D7 retention','D30 retention'].map(x=><article className="card" key={x}><span>{x}</span><strong>—</strong><small>Metric source not connected</small></article>)}</div><div className="grid"><Empty title="Retention & Cohorts" text="D1/D7/D14/D30, churn and reactivation require verified event definitions."/><Empty title="Engagement & Monetization" text="Live, PK, Clubs, Moments, paid content, ARPU/LTV/CAC and conversion metrics require verified sources."/></div></>}
+
 function Empty({title,text}){return <section className="module"><Title eyebrow="PLANNED / DESIGNED" title={title}/><div className="empty"><strong>{title} frontend shell is ready.</strong><p>{text||'Live values and actions stay disabled until the corresponding Frenzone backend contract is verified.'}</p></div></section>}
 function Module({name}) {
  if(name==='Users')return <UsersModule/>; if(name==='Notifications')return <NotificationsModule/>;
  if(name==='Reports & Cases')return <ReportsModule/>; if(name==='Clubs')return <ClubsModule/>;
  if(name==='Transactions & Payouts')return <TransactionsModule/>; if(name==='Law Enforcement')return <LawModule/>;
+ if(name==='Live Control')return <LiveModule/>; if(name==='KYC & Verification')return <KycModule/>;
+ if(name==='User Activity')return <AuditModule activity/>; if(name==='Admin Audit')return <AuditModule/>;
+ if(name==='Roles & Permissions')return <RolesModule/>; if(name==='Settings')return <SettingsModule/>;
+ if(name==='Analytics')return <AnalyticsModule/>;
  return <Empty title={name}/>
 }
 
