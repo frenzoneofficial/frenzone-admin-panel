@@ -24,7 +24,7 @@ function Status({children}) { return <span className="status">{children}</span> 
 
 function Dashboard() {
   return <>
-    <div className="cards">{cards.map(([label]) => <article className="card" key={label}><span>{label}</span><strong>—</strong><small>Backend not connected</small></article>)}</div>
+    <CommandStatus/><div className="cards">{cards.map(([label]) => <article className="card" key={label}><span>{label}</span><strong>—</strong><small>Backend not connected</small></article>)}</div>
     <div className="grid">
       <section className="module"><Title eyebrow="OPERATIONS" title="Command Center"/><div className="rows">
         {['Moderation queue','Live operations','Payout review','System/provider status'].map(x=><div className="row" key={x}><div><strong>{x}</strong><small>Awaiting backend connection</small></div><ChevronRight size={18}/></div>)}
@@ -135,6 +135,8 @@ function SettingsModule(){return <div className="grid"><section className="modul
 function AnalyticsModule(){return <><div className="cards">{['DAU','WAU','MAU','D1 retention','D7 retention','D30 retention'].map(x=><article className="card" key={x}><span>{x}</span><strong>—</strong><small>Metric source not connected</small></article>)}</div><div className="grid"><Empty title="Retention & Cohorts" text="D1/D7/D14/D30, churn and reactivation require verified event definitions."/><Empty title="Engagement & Monetization" text="Live, PK, Clubs, Moments, paid content, ARPU/LTV/CAC and conversion metrics require verified sources."/></div></>}
 
 function NotificationHistory(){return <section className="module"><Title eyebrow="DELIVERY HISTORY" title="Campaign History" actions={<button className="secondary"><Download size={14}/> Export</button>}/><div className="table-wrap"><table><thead><tr><th>Campaign</th><th>Channel</th><th>Audience</th><th>Sent</th><th>Delivered</th><th>Opened</th><th>Clicked</th><th>Failed</th><th>UTC</th></tr></thead><tbody><tr><td colSpan="9"><div className="table-empty"><Bell size={22}/><b>No campaign backend connected</b><span>Metrics remain unavailable until the delivery providers and event callbacks are verified.</span></div></td></tr></tbody></table></div></section>}
+
+function CommandStatus(){return <div className="readiness"><div><b>Frontend status</b><span>Preview implementation complete</span></div><div><b>Backend status</b><span>Connection pending repository/API access</span></div><div><b>Production status</b><span>Untouched</span></div></div>}
 
 function Empty({title,text}){return <section className="module"><Title eyebrow="PLANNED / DESIGNED" title={title}/><div className="empty"><strong>{title} frontend shell is ready.</strong><p>{text||'Live values and actions stay disabled until the corresponding Frenzone backend contract is verified.'}</p></div></section>}
 function Module({name}) {
