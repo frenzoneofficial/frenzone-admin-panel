@@ -92,8 +92,43 @@ function NotificationsModule(){
  </div>
 }
 
+function ReportsModule(){
+ const types=['User Profile','Live Stream','Club','Post / Video']
+ return <section className="module"><Title eyebrow="MODERATION" title="Reports & Cases" actions={<div className="actions"><button className="secondary"><Filter size={14}/> Filters</button><button className="secondary"><Download size={14}/> Export</button></div>}/>
+  <div className="filter-chips">{types.map(x=><button key={x}>{x}</button>)}</div>
+  <div className="table-wrap"><table><thead><tr><th>Case</th><th>Reported entity</th><th>Category</th><th>Reporter</th><th>Status</th><th>Created UTC</th></tr></thead><tbody>
+   <tr><td colSpan="6"><div className="table-empty"><ShieldAlert size={22}/><b>No backend cases loaded</b><span>Abuse, nudity/sexual content, harassment, threats, spam and other report categories will be unified here.</span></div></td></tr>
+  </tbody></table></div>
+ </section>
+}
+
+function ClubsModule(){
+ return <div className="grid"><section className="module"><Title eyebrow="CLUB DIRECTORY" title="Active Clubs" actions={<button className="secondary"><Filter size={14}/> Filters</button>}/>
+  <div className="club-tiers"><div><b>$3.99</b><span>Monthly</span></div><div><b>$6.99</b><span>Monthly</span></div><div><b>$9.99</b><span>Monthly</span></div></div>
+  <div className="empty compact"><strong>No Club backend data</strong><p>Each Club will show Club ID, owner, price, paid members, monthly subscription status, reports and subscription performance.</p></div>
+ </section><section className="module"><Title eyebrow="DATA QUALITY" title="Club safeguards"/><Info icon={<Crown/>} a="Free Club tier" b="Not permitted"/><Info icon={<ShieldAlert/>} a="Invalid / zero price" b="Pricing anomaly"/><Info icon={<CreditCard/>} a="Creator monetization" b="30% / 42% / 28%"/><p className="note">Deleted Clubs leave the active directory but can remain in authorized audit/history records.</p></section></div>
+}
+
+function TransactionsModule(){
+ return <><div className="cards finance-cards">{['Gross revenue','Store fees','Creator share','Frenzone share','Pending payouts','Refunds / chargebacks'].map(x=><article className="card" key={x}><span>{x}</span><strong>—</strong><small>Backend not connected</small></article>)}</div>
+ <section className="module"><Title eyebrow="FINANCE" title="Transactions & Payouts" actions={<button className="secondary"><Download size={14}/> Export</button>}/>
+ <div className="table-wrap"><table><thead><tr><th>Transaction ID</th><th>User / Creator</th><th>Type</th><th>Gross</th><th>Store</th><th>Creator</th><th>Frenzone</th><th>Status</th></tr></thead><tbody><tr><td colSpan="8"><div className="table-empty"><CreditCard size={22}/><b>No financial API connected</b><span>Transaction metadata and payout records will appear only after reconciliation fields are verified.</span></div></td></tr></tbody></table></div>
+ <p className="demo-warning">Creator monetization validation: Store 30% • Creator 42% • Frenzone 28%. Verification: Store 30% • Frenzone 70%.</p></section></>
+}
+
+function LawModule(){
+ return <section className="module restricted"><Title eyebrow="RESTRICTED ACCESS" title="Law Enforcement Reports" actions={<Status>AUTHORIZED ADMINS ONLY</Status>}/>
+ <div className="table-wrap"><table><thead><tr><th>Case ID</th><th>Agency</th><th>Jurisdiction</th><th>Reference</th><th>Request type</th><th>Status</th><th>Received UTC</th></tr></thead><tbody><tr><td colSpan="7"><div className="table-empty"><Scale size={22}/><b>No law-enforcement backend connected</b><span>Access, legal-process validation, actions and disclosures require a complete audit log.</span></div></td></tr></tbody></table></div>
+ </section>
+}
+
 function Empty({title,text}){return <section className="module"><Title eyebrow="PLANNED / DESIGNED" title={title}/><div className="empty"><strong>{title} frontend shell is ready.</strong><p>{text||'Live values and actions stay disabled until the corresponding Frenzone backend contract is verified.'}</p></div></section>}
-function Module({name}) {if(name==='Users')return <UsersModule/>;if(name==='Notifications')return <NotificationsModule/>;return <Empty title={name}/>}
+function Module({name}) {
+ if(name==='Users')return <UsersModule/>; if(name==='Notifications')return <NotificationsModule/>;
+ if(name==='Reports & Cases')return <ReportsModule/>; if(name==='Clubs')return <ClubsModule/>;
+ if(name==='Transactions & Payouts')return <TransactionsModule/>; if(name==='Law Enforcement')return <LawModule/>;
+ return <Empty title={name}/>
+}
 
 export default function App() {
  const [active,setActive]=useState('Command Center'),[mobile,setMobile]=useState(false)
