@@ -56,7 +56,7 @@
 </main>
 <script>
   const API_BASE = 'https://api.frenzone.live';
-  const tokenKeys = ['adminToken','admin_token','token','authToken','accessToken'];
+  const tokenKeys = ['adminToken','adminAuthToken','admin_token','token','authToken','accessToken'];
   const token = tokenKeys.map(k => localStorage.getItem(k) || sessionStorage.getItem(k)).find(Boolean);
   let currentRows = [];
 
