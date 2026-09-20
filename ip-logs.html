@@ -1,0 +1,127 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Frenzone Admin — IP & Login Logs</title>
+  <style>
+    :root { color-scheme: dark; --bg:#101116; --panel:#191b23; --line:#2b2e3a; --text:#f5f6fa; --muted:#a4a9b8; --accent:#ff7a1a; --good:#38c976; --bad:#ff5c6c; }
+    * { box-sizing:border-box; }
+    body { margin:0; background:var(--bg); color:var(--text); font:14px/1.45 Inter,system-ui,sans-serif; }
+    header { display:flex; align-items:center; justify-content:space-between; gap:16px; padding:20px 28px; border-bottom:1px solid var(--line); }
+    h1 { margin:0; font-size:24px; } h1 span { color:var(--accent); }
+    a { color:var(--accent); text-decoration:none; }
+    main { padding:24px 28px 40px; }
+    .notice { background:#241e19; border:1px solid #5c3b24; border-radius:12px; padding:12px 16px; margin-bottom:18px; color:#ffd7b5; }
+    .filters { display:grid; grid-template-columns:1.4fr 1fr 1fr auto auto; gap:10px; background:var(--panel); padding:16px; border:1px solid var(--line); border-radius:14px; margin-bottom:18px; }
+    input,select,button { min-height:42px; border-radius:9px; border:1px solid var(--line); background:#11131a; color:var(--text); padding:0 12px; }
+    button { cursor:pointer; background:var(--accent); border-color:var(--accent); color:#111; font-weight:700; }
+    button.secondary { background:#232631; color:var(--text); border-color:var(--line); }
+    .summary { display:flex; gap:12px; flex-wrap:wrap; margin-bottom:14px; color:var(--muted); }
+    .table-wrap { overflow:auto; background:var(--panel); border:1px solid var(--line); border-radius:14px; }
+    table { width:100%; border-collapse:collapse; min-width:1050px; }
+    th,td { padding:12px 14px; text-align:left; border-bottom:1px solid var(--line); vertical-align:top; }
+    th { position:sticky; top:0; background:#20232d; color:var(--muted); font-size:12px; text-transform:uppercase; letter-spacing:.04em; }
+    tr:hover td { background:#1d2029; }
+    .ok { color:var(--good); } .fail { color:var(--bad); } .muted { color:var(--muted); }
+    .error { color:var(--bad); padding:18px; }
+    @media(max-width:900px){ .filters{grid-template-columns:1fr 1fr}.filters input{grid-column:span 2} header,main{padding-left:16px;padding-right:16px} }
+  </style>
+</head>
+<body>
+<header>
+  <h1>IP & <span>Login Logs</span></h1>
+  <a href="/">← Back to Admin</a>
+</header>
+<main>
+  <div class="notice">Restricted security data. Exact IP addresses are retained for 90 days and should only be accessed for account security, fraud investigation, or legal compliance.</div>
+  <div class="filters">
+    <input id="userId" placeholder="User ID (optional)" />
+    <select id="provider">
+      <option value="">All providers</option><option>Email</option><option>EmailSignup</option>
+      <option>Google</option><option>Apple</option><option>Twitter</option><option>LinkedIn</option><option>Session</option>
+    </select>
+    <select id="success"><option value="">All results</option><option value="true">Successful</option><option value="false">Failed</option></select>
+    <button id="load">Load logs</button>
+    <button id="export" class="secondary">Export CSV</button>
+  </div>
+  <div class="summary"><span id="count">0 records</span><span>•</span><span>Newest first</span><span>•</span><span>Automatic deletion after 90 days</span></div>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Timestamp</th><th>User</th><th>IP address</th><th>Provider</th><th>Result</th><th>Device / user-agent</th><th>Failure reason</th></tr></thead>
+      <tbody id="rows"><tr><td colspan="7" class="muted">Loading…</td></tr></tbody>
+    </table>
+  </div>
+  <div id="error" class="error"></div>
+</main>
+<script>
+  const API_BASE = 'https://api.frenzone.live';
+  const tokenKeys = ['adminToken','admin_token','token','authToken','accessToken'];
+  const token = tokenKeys.map(k => localStorage.getItem(k) || sessionStorage.getItem(k)).find(Boolean);
+  let currentRows = [];
+
+  const escapeHtml = value => String(value ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  const formatDate = value => value ? new Date(value).toLocaleString() : '—';
+
+  async function loadLogs() {
+    const error = document.getElementById('error');
+    error.textContent = '';
+    if (!token) {
+      error.textContent = 'Admin authorization was not found. Return to the main admin panel, sign in, then open IP Logs again.';
+      document.getElementById('rows').innerHTML = '<tr><td colspan="7">Not authorized</td></tr>';
+      return;
+    }
+    const params = new URLSearchParams({ limit:'200', includeIp:'true' });
+    const userId = document.getElementById('userId').value.trim();
+    const provider = document.getElementById('provider').value;
+    const success = document.getElementById('success').value;
+    if (userId) params.set('userid', userId);
+    if (provider) params.set('provider', provider);
+    if (success) params.set('success', success);
+    try {
+      const response = await fetch(`${API_BASE}/admin-api/analytics/login-audits?${params}`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error || data.message || 'Unable to load logs');
+      currentRows = data.audits || [];
+      document.getElementById('count').textContent = `${currentRows.length} records`;
+      document.getElementById('rows').innerHTML = currentRows.length ? currentRows.map(row => {
+        const user = row.userid || {};
+        const identity = [user.username, user.email].filter(Boolean).join('<br>');
+        return `<tr>
+          <td>${escapeHtml(formatDate(row.occurredAt))}</td>
+          <td>${identity || '<span class="muted">Unknown / failed login</span>'}</td>
+          <td><code>${escapeHtml(row.ipAddress || 'Unavailable')}</code></td>
+          <td>${escapeHtml(row.provider)}</td>
+          <td class="${row.success ? 'ok' : 'fail'}">${row.success ? 'Success' : 'Failed'}</td>
+          <td>${escapeHtml(row.userAgent || 'Unavailable')}</td>
+          <td class="fail">${escapeHtml(row.failureReason || '')}</td>
+        </tr>`;
+      }).join('') : '<tr><td colspan="7" class="muted">No matching records</td></tr>';
+    } catch (e) {
+      error.textContent = e.message;
+      document.getElementById('rows').innerHTML = '<tr><td colspan="7">Could not load logs</td></tr>';
+    }
+  }
+
+  function exportCsv() {
+    const fields = ['occurredAt','username','email','ipAddress','provider','success','userAgent','failureReason'];
+    const quote = v => '"' + String(v ?? '').replaceAll('"','""') + '"';
+    const lines = [fields.join(',')].concat(currentRows.map(row => [
+      row.occurredAt,row.userid?.username,row.userid?.email,row.ipAddress,row.provider,row.success,row.userAgent,row.failureReason
+    ].map(quote).join(',')));
+    const blob = new Blob([lines.join('\n')], {type:'text/csv'});
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = `frenzone-ip-logs-${new Date().toISOString().slice(0,10)}.csv`;
+    link.click();
+    URL.revokeObjectURL(link.href);
+  }
+
+  document.getElementById('load').addEventListener('click', loadLogs);
+  document.getElementById('export').addEventListener('click', exportCsv);
+  loadLogs();
+</script>
+</body>
+</html>
