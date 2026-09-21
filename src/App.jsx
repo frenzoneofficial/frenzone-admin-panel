@@ -1,9 +1,9 @@
-import React, { useMemo, useState } from 'react'
+import React, { useEffect, useMemo, useRef, useState } from 'react'
 import {
   LayoutDashboard, Users, ShieldAlert, Radio, Bell, BarChart3, Activity,
   ClipboardList, BadgeCheck, CreditCard, Crown, KeyRound, Settings, Scale,
   Search, ChevronRight, Menu, X, UserRound, Smartphone, MapPin, Clock3,
-  Mail, Globe2, Filter, Download
+  Mail, Globe2, Filter, Download, ImagePlus, Trash2, Upload
 } from 'lucide-react'
 
 const nav = [
@@ -79,6 +79,31 @@ function Sessions() {
 
 function NotificationsModule(){
  const [mode,setMode]=useState('Email')
+ const [image,setImage]=useState(null)
+ const [imageError,setImageError]=useState('')
+ const [dragging,setDragging]=useState(false)
+ const imageInput=useRef(null)
+ const imageUrl=useMemo(()=>image?URL.createObjectURL(image):'',[image])
+
+ useEffect(()=>()=>{ if(imageUrl) URL.revokeObjectURL(imageUrl) },[imageUrl])
+
+ function selectImage(file){
+  setImageError('')
+  if(!file)return
+  const accepted=['image/jpeg','image/png','image/webp']
+  if(!accepted.includes(file.type)){
+   setImage(null); setImageError('Use a JPG, PNG or WebP image.'); return
+  }
+  if(file.size>5*1024*1024){
+   setImage(null); setImageError('Image must be 5 MB or smaller.'); return
+  }
+  setImage(file)
+ }
+
+ function dropImage(event){
+  event.preventDefault(); setDragging(false); selectImage(event.dataTransfer.files?.[0])
+ }
+
  return <><div className="grid">
   <section className="module"><Title eyebrow="CAMPAIGN COMPOSER" title="New notification"/><div className="seg">{['Push','Email','Both'].map(x=><button className={mode===x?'active':''} onClick={()=>setMode(x)} key={x}>{x}</button>)}</div>
    <label>Audience<select><option>All eligible users</option><option>Country / countries</option><option>Specific Frenzone users</option><option>Specific registered emails</option><option>Imported eligible email list</option></select></label>
@@ -86,6 +111,13 @@ function NotificationsModule(){
    <label>Specific recipients<div className="input"><Mail size={15}/> Search user ID, username or registered email</div></label>
    <label>Language<select><option>English</option><option>Arabic</option><option>French</option><option>Localized variants</option></select></label>
    <label>Title<input placeholder="Campaign title"/></label><label>Message<textarea placeholder="Write notification or email message"/></label>
+   <div className="notification-image-field">
+    <div className="notification-image-label"><div><b>Notification image</b><span>Optional • JPG, PNG or WebP • Recommended 1200 × 628 px • Max 5 MB</span></div>{image&&<button className="remove-image" type="button" onClick={()=>setImage(null)}><Trash2 size={14}/> Remove</button>}</div>
+    <input ref={imageInput} className="sr-only" type="file" accept="image/jpeg,image/png,image/webp" onChange={event=>selectImage(event.target.files?.[0])}/>
+    {image ? <div className="notification-image-preview"><img src={imageUrl} alt="Notification upload preview"/><button type="button" className="replace-image" onClick={()=>imageInput.current?.click()}><ImagePlus size={15}/> Replace image</button></div>
+    : <button type="button" className={dragging?'image-dropzone dragging':'image-dropzone'} onClick={()=>imageInput.current?.click()} onDragOver={event=>{event.preventDefault();setDragging(true)}} onDragLeave={()=>setDragging(false)} onDrop={dropImage}><Upload size={24}/><b>Click to upload image</b><span>or drag and drop</span></button>}
+    {imageError&&<p className="field-error" role="alert">{imageError}</p>}
+   </div>
    <button className="primary" disabled>Send unavailable until backend is connected</button>
   </section>
   <section className="module"><Title eyebrow="RECIPIENT PREVIEW" title="Audience"/><div className="preview-count">—</div><p className="muted">Eligible recipients</p><div className="empty compact"><strong>Backend not connected</strong><p>Suppressed, unsubscribed, bounced and invalid recipients will be excluded before send.</p></div></section>
