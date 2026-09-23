@@ -5,6 +5,7 @@ import {
   Search, ChevronRight, Menu, X, UserRound, Smartphone, MapPin, Clock3,
   Mail, Globe2, Filter, Download, ImagePlus, Trash2, Upload
 } from 'lucide-react'
+import { apiRequest, backendConfigured } from './api'
 
 const nav = [
   ['Command Center', LayoutDashboard], ['Users', Users], ['Reports & Cases', ShieldAlert],
@@ -142,10 +143,29 @@ function ClubsModule(){
 }
 
 function TransactionsModule(){
- return <><div className="cards finance-cards">{['Gross revenue','Store fees','Creator share','Frenzone share','Pending payouts','Refunds / chargebacks'].map(x=><article className="card" key={x}><span>{x}</span><strong>—</strong><small>Backend not connected</small></article>)}</div>
- <section className="module"><Title eyebrow="FINANCE" title="Transactions & Payouts" actions={<button className="secondary"><Download size={14}/> Export</button>}/>
- <div className="table-wrap"><table><thead><tr><th>Transaction ID</th><th>User / Creator</th><th>Type</th><th>Gross</th><th>Store</th><th>Creator</th><th>Frenzone</th><th>Status</th></tr></thead><tbody><tr><td colSpan="8"><div className="table-empty"><CreditCard size={22}/><b>No financial API connected</b><span>Transaction metadata and payout records will appear only after reconciliation fields are verified.</span></div></td></tr></tbody></table></div>
- <p className="demo-warning">Creator monetization validation: Store 30% • Creator 42% • Frenzone 28%. Verification: Store 30% • Frenzone 70%.</p></section></>
+ const [payouts,setPayouts]=useState([]), [loading,setLoading]=useState(false), [error,setError]=useState('')
+ const load=async()=>{ if(!backendConfigured)return; setLoading(true); setError(''); try{const r=await apiRequest('/payout/getAllPayouts'); setPayouts(r?.payouts||r?.data||[])}catch(e){setError(e.message)}finally{setLoading(false)} }
+ useEffect(()=>{load()},[])
+ const act=async(payout,decision)=>{
+   const note=window.prompt(decision==='processed'?'Processing note / payment reference:':'Admin review note:')
+   if(note===null||!note.trim())return
+   const warning=decision==='refuse'?'Refuse this payout and return the reserved Diamonds?':'Confirm '+decision+' for this payout?'
+   if(!window.confirm(warning))return
+   try{
+     const path=decision==='processed'?'/payout/markPayoutProcessed':'/payout/reviewPayout'
+     const body=decision==='processed'?{payoutId:payout._id,note}:{payoutId:payout._id,decision,note}
+     await apiRequest(path,{method:'PATCH',body:JSON.stringify(body)}); await load()
+   }catch(e){setError(e.message)}
+ }
+ const pending=payouts.filter(p=>p.status==='pending').length
+ return <><div className="cards finance-cards">{[['Pending payouts',pending],['Approved',payouts.filter(p=>p.status==='approved').length],['Processed',payouts.filter(p=>p.status==='processed').length],['Refused',payouts.filter(p=>p.status==='refused').length]].map(([x,v])=><article className="card" key={x}><span>{x}</span><strong>{backendConfigured?v:'—'}</strong><small>{backendConfigured?'Manual payout review':'Backend not configured'}</small></article>)}</div>
+ <section className="module"><Title eyebrow="FINANCE" title="Payout Review"/>
+ {!backendConfigured&&<div className="table-empty"><CreditCard size={22}/><b>Payout API not configured</b><span>Set VITE_FRENZONE_API_BASE to connect the final admin panel.</span></div>}
+ {error&&<p className="demo-warning">{error}</p>}
+ {backendConfigured&&<div className="table-wrap"><table><thead><tr><th>Creator</th><th>Method</th><th>USD</th><th>Diamonds</th><th>Didit</th><th>Status</th><th>Requested</th><th>Actions</th></tr></thead><tbody>
+ {loading?<tr><td colSpan="8">Loading payouts…</td></tr>:payouts.length===0?<tr><td colSpan="8">No payout requests.</td></tr>:payouts.map(p=><tr key={p._id}><td>{p.userId?.username||p.userId?.email||String(p.userId||'—')}</td><td>{p.payoutMethod}</td><td>{'$'+Number(p.amount||0).toFixed(2)} {p.currency||'USD'}</td><td>{Number(p.diamondsDebited||0).toLocaleString()}</td><td><Status>{p.userId?.identityVerified?'Verified':'—'}</Status></td><td><Status>{p.status}</Status></td><td>{p.createdAt?new Date(p.createdAt).toLocaleString():'—'}</td><td>{p.status==='pending'?<><button className="primary" onClick={()=>act(p,'approve')}>Approve</button> <button className="secondary" onClick={()=>act(p,'refuse')}>Refuse</button></>:p.status==='approved'?<button className="primary" onClick={()=>act(p,'processed')}>Mark Processed</button>:'—'}</td></tr>)}
+ </tbody></table></div>}
+ <p className="demo-warning">Approval does not send money automatically. Process Bank/PayPal manually, then mark the payout Processed. Refusal returns the reserved Diamonds.</p></section></>
 }
 
 function LawModule(){
